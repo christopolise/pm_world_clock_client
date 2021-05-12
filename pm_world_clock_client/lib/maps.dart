@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pm_world_clock_client/info.dart';
+import 'package:dio/dio.dart';
 import 'package:pm_world_clock_client/main.dart';
 
 class MapsPage extends StatefulWidget {
@@ -242,6 +242,13 @@ class _MapsPageState extends State<MapsPage> {
 ]
   ''';
 
+  final TextEditingController _filter = new TextEditingController();
+  final dio = new Dio();
+  String _searchText = "";
+  List names = new List();
+  List filteredNames = new List();
+  Icon _searchIcon = new Icon(Icons.search);
+
   List<Marker> myMarker = <Marker>[];
   LatLng selectedPosition = LatLng(40.24626993238064, -111.64780855178833);
 
@@ -249,6 +256,41 @@ class _MapsPageState extends State<MapsPage> {
     target: LatLng(40.24626993238064, -111.64780855178833),
     zoom: 18,
   );
+
+  _ExamplePageState() {
+    _filter.addListener(() {
+      if (_filter.text.isEmpty) {
+        setState(() {
+          _searchText = "";
+          filteredNames = names;
+        });
+      } else {
+        setState(() {
+          _searchText = _filter.text;
+        });
+      }
+    });
+  }
+
+  void _getNames() async {
+    final response = await dio.get(
+        'https://api.waqi.info/search/?token=510c278e7faabc1d3b7624d63860cad35acab3f1&keyword=*');
+    List tempList = new List();
+    for (int i = 0; i < response.data['results'].length; i++) {
+      tempList.add(response.data['results'][i]);
+    }
+    setState(() {
+      names = tempList;
+      names.shuffle();
+      filteredNames = names;
+    });
+  }
+
+  @override
+  void initState() {
+    this._getNames();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
