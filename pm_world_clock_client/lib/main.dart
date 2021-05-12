@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pm_world_clock_client/info.dart';
 import 'package:pm_world_clock_client/maps.dart';
-import 'package:pm_world_clock_client/search.dart';
 
 void main() {
   runApp(MyApp());
@@ -59,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return DefaultTabController(
-        length: 3,
+        length: 2,
         child: Scaffold(
             backgroundColor: Colors.black87,
             appBar: AppBar(
@@ -85,7 +84,6 @@ class _MyHomePageState extends State<MyHomePage> {
               tabs: [
                 Tab(icon: Icon(Icons.info)),
                 Tab(icon: Icon(Icons.map)),
-                Tab(icon: Icon(Icons.search)),
               ],
             ),
             body: TabBarView(
@@ -93,7 +91,6 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 InfoPage(),
                 MapsPage(),
-                SearchPage(),
               ],
             ) // This trailing comma makes auto-formatting nicer for build methods.
             ));

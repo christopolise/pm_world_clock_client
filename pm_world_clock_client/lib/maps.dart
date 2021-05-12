@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pm_world_clock_client/info.dart';
+import 'package:pm_world_clock_client/main.dart';
 
 class MapsPage extends StatefulWidget {
   MapsPage({Key key}) : super(key: key);
@@ -241,17 +243,12 @@ class _MapsPageState extends State<MapsPage> {
   ''';
 
   List<Marker> myMarker = <Marker>[];
+  LatLng selectedPosition = LatLng(40.24626993238064, -111.64780855178833);
 
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(40.24626993238064, -111.64780855178833),
     zoom: 18,
   );
-
-  static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
 
   @override
   Widget build(BuildContext context) {
@@ -263,18 +260,49 @@ class _MapsPageState extends State<MapsPage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       backgroundColor: Colors.black87,
-      body: GoogleMap(
-        markers: Set.from(myMarker),
-        onTap: _banana,
-        // mapType: MapType.hybrid,
-        initialCameraPosition: _kGooglePlex,
-        onMapCreated: (controller) {
-          controller.setMapStyle(style);
-          _controller.complete(controller);
-        },
+      body: Stack(
+        children: <Widget>[
+          // Replace this container with your Map widget
+          GoogleMap(
+            markers: Set.from(myMarker),
+            onTap: _banana,
+            // mapType: MapType.hybrid,
+            initialCameraPosition: _kGooglePlex,
+            onMapCreated: (controller) {
+              controller.setMapStyle(style);
+              _controller.complete(controller);
+            },
+          ),
+          Positioned(
+            top: 20,
+            right: 20,
+            left: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                // color: Colors.black,
+                color: Colors.white,
+              ),
+              child: TextField(
+                cursorColor: Colors.black,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.go,
+                decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        const Radius.circular(10.0),
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                    hintText: "Find AQI station..."),
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _goToTheLake,
+        onPressed: _submitLocation,
         label: Text('Add to Screen'),
         icon: Icon(Icons.add),
       ),
@@ -285,18 +313,42 @@ class _MapsPageState extends State<MapsPage> {
 
   _banana(LatLng loc) {
     setState(() {
-      print(loc.toString());
+      selectedPosition = loc;
       myMarker = [];
       myMarker.add(Marker(
           markerId: MarkerId(loc.toString()),
           position: loc,
           draggable: true,
-          onDragEnd: (pos) {}));
+          onDragEnd: (pos) {
+            selectedPosition = pos;
+            print(selectedPosition);
+          }));
     });
+    print(selectedPosition);
   }
 
-  Future<void> _goToTheLake() async {
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
+  // Future<void> _goToTheLake() async {
+  //   final GoogleMapController controller = await _controller.future;
+  //   controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
+  // }
+
+  _submitLocation() async {
+    final snackBar = SnackBar(
+      content: Text('Location added to display.'),
+      action: SnackBarAction(
+        label: 'Close',
+        onPressed: () {
+          // Some code to undo the change.
+        },
+      ),
+    );
+    Navigator.pop(context);
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MyHomePage(
+                  title: "NET Lab - WAQI",
+                )));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
