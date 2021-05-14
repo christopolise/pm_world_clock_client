@@ -1,9 +1,14 @@
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:pm_world_clock_client/main.dart';
+import 'package:http/http.dart' as http;
+import 'package:mqtt_client/mqtt_browser_client.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+
+String waqiAPIKey = "510c278e7faabc1d3b7624d63860cad35acab3f1";
 
 class MapsPage extends StatefulWidget {
   MapsPage({Key key}) : super(key: key);
@@ -23,6 +28,78 @@ class MapsPage extends StatefulWidget {
 
 class _MapsPageState extends State<MapsPage> {
   Completer<GoogleMapController> _controller = Completer();
+  MqttBrowserClient client;
+  MqttConnectionState connectionState;
+  Future mqttFuture;
+  String locationListStr = "";
+
+  onConnected() {
+    print("HOLY CRAP THIS CONNECTED");
+  }
+
+  onDisconnected() {
+    print("WTF IT DISCONNECTED");
+  }
+
+  onSubscribed(String sub) {
+    print("We are subscribed to $sub");
+  }
+
+  onMsg(String username, String password) {}
+
+  _getMqtt() async {
+    MqttBrowserClient client = await connect();
+    return client;
+  }
+
+  Future<MqttBrowserClient> connect() async {
+    MqttBrowserClient client =
+        MqttBrowserClient('ws://mqtt.eclipseprojects.io/mqtt', 'itsame');
+    client.port = 80;
+    client.logging(on: false);
+    client.onConnected = onConnected;
+    client.onDisconnected = onDisconnected;
+    // client.onUnsubscribed = onUnsubscribed;
+    client.onSubscribed = onSubscribed;
+    // client.onSubscribeFail = onSubscribeFail;
+    // client.pongCallback = pong;
+    // client.on
+
+    final connMessage = MqttConnectMessage();
+    // .authenticateAs('username', 'password')
+    // .keepAliveFor(60)
+    // .withWillTopic('willtopic')
+    // .withWillMessage('Will message')
+    // .startClean()
+    // .withWillQos(MqttQos.atLeastOnce);
+    client.connectionMessage = connMessage;
+
+    try {
+      await client.connect();
+    } catch (e) {
+      print('Exception: $e');
+      client.disconnect();
+    }
+
+    client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
+      final MqttPublishMessage message = c[0].payload;
+
+      // final builder = MqttClientPayloadBuilder();
+      // builder.addString("");
+
+      // client.publishMessage(
+      //     'aq_display/location_list', MqttQos.exactlyOnce, builder.payload);
+
+      final payload =
+          MqttPublishPayload.bytesToStringAsString(message.payload.message);
+
+      locationListStr = payload;
+
+      print('Received message: $payload from topic: ${c[0].topic}>');
+    });
+
+    return client;
+  }
 
   String style = '''
   [
@@ -257,39 +334,60 @@ class _MapsPageState extends State<MapsPage> {
     zoom: 18,
   );
 
-  _ExamplePageState() {
-    _filter.addListener(() {
-      if (_filter.text.isEmpty) {
-        setState(() {
-          _searchText = "";
-          filteredNames = names;
-        });
-      } else {
-        setState(() {
-          _searchText = _filter.text;
-        });
-      }
-    });
-  }
+  // _ExamplePageState() {
+  //   _filter.addListener(() {
+  //     if (_filter.text.isEmpty) {
+  //       setState(() {
+  //         _searchText = "";
+  //         filteredNames = names;
+  //       });
+  //     } else {
+  //       setState(() {
+  //         _searchText = _filter.text;
+  //       });
+  //     }
+  //   });
+  // }
 
-  void _getNames() async {
-    final response = await dio.get(
-        'https://api.waqi.info/search/?token=510c278e7faabc1d3b7624d63860cad35acab3f1&keyword=*');
-    List tempList = new List();
-    for (int i = 0; i < response.data['results'].length; i++) {
-      tempList.add(response.data['results'][i]);
-    }
-    setState(() {
-      names = tempList;
-      names.shuffle();
-      filteredNames = names;
-    });
-  }
+  // void _getNames() async {
+  //   final response = await dio.get(
+  //       'https://api.waqi.info/search/?token=510c278e7faabc1d3b7624d63860cad35acab3f1&keyword=*');
+  //   List tempList = new List();
+  //   for (int i = 0; i < response.data['results'].length; i++) {
+  //     tempList.add(response.data['results'][i]);
+  //   }
+  //   setState(() {
+  //     names = tempList;
+  //     names.shuffle();
+  //     filteredNames = names;
+  //   });
+  // }
+
+  // void _searchPressed() {
+  //   setState(() {
+  //     if (this._searchIcon.icon == Icons.search) {
+  //       this._searchIcon = new Icon(Icons.close);
+  //       this._appBarTitle = new TextField(
+  //         controller: _filter,
+  //         decoration: new InputDecoration(
+  //             prefixIcon: new Icon(Icons.search), hintText: 'Search...'),
+  //       );
+  //     } else {
+  //       this._searchIcon = new Icon(Icons.search);
+  //       this._appBarTitle = new Text('Search Example');
+  //       filteredNames = names;
+  //       _filter.clear();
+  //     }
+  //   });
+  // }
 
   @override
   void initState() {
-    this._getNames();
     super.initState();
+
+    mqttFuture = _getMqtt();
+    mqttFuture.then((value) async =>
+        await value.subscribe('aq_display/location_list', MqttQos.atLeastOnce));
   }
 
   @override
@@ -302,47 +400,94 @@ class _MapsPageState extends State<MapsPage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       backgroundColor: Colors.black87,
-      body: Stack(
-        children: <Widget>[
-          // Replace this container with your Map widget
-          GoogleMap(
-            markers: Set.from(myMarker),
-            onTap: _banana,
-            // mapType: MapType.hybrid,
-            initialCameraPosition: _kGooglePlex,
-            onMapCreated: (controller) {
-              controller.setMapStyle(style);
-              _controller.complete(controller);
-            },
-          ),
-          Positioned(
-            top: 20,
-            right: 20,
-            left: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                // color: Colors.black,
-                color: Colors.white,
-              ),
-              child: TextField(
-                cursorColor: Colors.black,
-                keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.go,
-                decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(10.0),
-                      ),
+      body: FutureBuilder(
+          future: mqttFuture,
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+                return Text("Wut");
+              case ConnectionState.active:
+              case ConnectionState.waiting:
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Padding(
+                          padding: EdgeInsets.all(25),
+                          child: Icon(
+                            Icons.settings_ethernet_outlined,
+                            color: Colors.white70,
+                            size: 60,
+                          ))
+                    ]),
+                    Text(
+                      "Connecting to NET Lab",
+                      style: TextStyle(color: Colors.white70, fontSize: 24),
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                    hintText: "Find AQI station..."),
-              ),
-            ),
-          ),
-        ],
-      ),
+                  ],
+                );
+              case ConnectionState.done:
+                return Stack(
+                  children: <Widget>[
+                    // Replace this container with your Map widget
+                    GoogleMap(
+                      markers: Set.from(myMarker),
+                      onTap: _banana,
+                      // mapType: MapType.hybrid,
+                      initialCameraPosition: _kGooglePlex,
+                      onMapCreated: (controller) {
+                        controller.setMapStyle(style);
+                        _controller.complete(controller);
+                      },
+                    ),
+                    Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                  // color: Colors.black,
+                                  color: Color.fromRGBO(255, 255, 255, .85),
+                                ),
+                                // color: Color.fromRGBO(255, 255, 255, .85),
+                                child: Padding(
+                                    padding: EdgeInsets.all(20),
+                                    child: Text(
+                                      "Tap on the map to choose a location",
+                                      style: TextStyle(fontSize: 20),
+                                    )))))
+                    // Positioned(
+                    //   top: 20,
+                    //   right: 20,
+                    //   left: 20,
+                    //   child: Container(
+                    //     decoration: BoxDecoration(
+                    //       borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    //       // color: Colors.black,
+                    //       color: Colors.white,
+                    //     ),
+                    //     child: TextField(
+                    //       cursorColor: Colors.black,
+                    //       keyboardType: TextInputType.text,
+                    //       textInputAction: TextInputAction.go,
+                    //       decoration: InputDecoration(
+                    //           prefixIcon: Icon(Icons.search),
+                    //           border: OutlineInputBorder(
+                    //             borderRadius: const BorderRadius.all(
+                    //               const Radius.circular(10.0),
+                    //             ),
+                    //           ),
+                    //           contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                    //           hintText: "Find AQI station..."),
+                    //     ),
+                    //   ),
+                    // ),
+                  ],
+                );
+            }
+          }),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _submitLocation,
         label: Text('Add to Screen'),
@@ -375,6 +520,44 @@ class _MapsPageState extends State<MapsPage> {
   // }
 
   _submitLocation() async {
+    print("Locations: $locationListStr");
+    String prevLocations = locationListStr;
+
+    final response = await http.get(Uri.https(
+        'api.waqi.info',
+        'feed/geo:${selectedPosition.latitude};${selectedPosition.longitude}/',
+        {"token": waqiAPIKey}));
+
+    final builder = MqttClientPayloadBuilder();
+    final builderEmpty = MqttClientPayloadBuilder();
+
+    mqttFuture.then((value) async {
+      // await value.subscribe('aq_display/location_list', MqttQos.atLeastOnce);
+      value.publishMessage(
+          'aq_display/location_list', MqttQos.atLeastOnce, builderEmpty.payload,
+          retain: true);
+      builder.addString(
+          "${prevLocations.substring(0, 14)}${selectedPosition.toJson()},[37.9788421857991,23.728971736732007],[47.916638882615025,106.9225416482629],[40.24626993238064,-111.64780855178833]${prevLocations.substring(14)}");
+      value.publishMessage(
+          'aq_display/location_list', MqttQos.atLeastOnce, builder.payload,
+          retain: true);
+    });
+
+    if (jsonDecode(response.body)["status"] == "error") {
+      // cityList.add(CityPM(aqi: 999, cityName: "ERR - ${locations[i]}"));
+      print("Err");
+    } else if (response.statusCode == 200) {
+      // If the server did return a 200 OK response,
+      // then parse the JSON.
+      // cityList.add(CityPM.fromJson(jsonDecode(response.body)));
+      // print(response.body);
+      // print("Gottem");
+    } else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      throw Exception('Failed to load album');
+    }
+
     final snackBar = SnackBar(
       content: Text('Location added to display.'),
       action: SnackBarAction(
