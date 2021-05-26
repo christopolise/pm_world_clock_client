@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:dio/dio.dart';
@@ -29,7 +30,7 @@ class MapsPage extends StatefulWidget {
 
 class _MapsPageState extends State<MapsPage> {
   Completer<GoogleMapController> _controller = Completer();
-  MqttServerClient client;
+  MqttBrowserClient client;
   MqttConnectionState connectionState;
   Future mqttFuture;
   String locationListStr = "";
@@ -49,15 +50,16 @@ class _MapsPageState extends State<MapsPage> {
   onMsg(String username, String password) {}
 
   _getMqtt() async {
-    MqttServerClient client = await connect();
+    MqttBrowserClient client = await connect();
     return client;
   }
 
-  Future<MqttServerClient> connect() async {
-    MqttServerClient client =
-        MqttServerClient('tcp://postman.cloudmqtt.com', 'yello');
-    client.port = 17408;
-    client.logging(on: false);
+  Future<MqttBrowserClient> connect() async {
+    MqttBrowserClient client =
+        MqttBrowserClient('ws://mqtt.eclipseprojects.io/mqtt', 'aq_client');
+    client.setProtocolV31();
+    client.logging(on: true);
+    client.port = 80;
     client.onConnected = onConnected;
     client.onDisconnected = onDisconnected;
     // client.onUnsubscribed = onUnsubscribed;
@@ -66,13 +68,14 @@ class _MapsPageState extends State<MapsPage> {
     // client.pongCallback = pong;
     // client.on
 
-    final connMessage = MqttConnectMessage();
-    // .authenticateAs('username', 'password')
-    // .keepAliveFor(60)
-    // .withWillTopic('willtopic')
-    // .withWillMessage('Will message')
-    // .startClean()
-    // .withWillQos(MqttQos.atLeastOnce);
+    final connMessage = MqttConnectMessage()
+        .withClientIdentifier('aq_client')
+        .authenticateAs('aq_client', 'enterthenetlab')
+        .keepAliveFor(60)
+        .withWillTopic('willtopic')
+        .withWillMessage('Will message')
+        .startClean()
+        .withWillQos(MqttQos.atLeastOnce);
     client.connectionMessage = connMessage;
 
     try {
@@ -369,7 +372,7 @@ class _MapsPageState extends State<MapsPage> {
                       Padding(
                           padding: EdgeInsets.all(25),
                           child: Icon(
-                            Icons.settings_ethernet_outlined,
+                            Icons.wifi_tethering,
                             color: Colors.white70,
                             size: 60,
                           ))
@@ -381,6 +384,31 @@ class _MapsPageState extends State<MapsPage> {
                   ],
                 );
               case ConnectionState.done:
+                if (snapshot.data == null) {
+                  return Container(
+                      color: Colors.red.shade500,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                    padding: EdgeInsets.all(25),
+                                    child: Icon(
+                                      Icons.wifi_tethering_off,
+                                      color: Colors.white70,
+                                      size: 60,
+                                    ))
+                              ]),
+                          Text(
+                            "Could not connect to NET Lab",
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 24),
+                          ),
+                        ],
+                      ));
+                }
                 return Stack(
                   children: <Widget>[
                     // Replace this container with your Map widget
@@ -460,7 +488,7 @@ class _MapsPageState extends State<MapsPage> {
           'aq_display/location_list', MqttQos.atLeastOnce, builderEmpty.payload,
           retain: true);
       builder.addString(
-          "${prevLocations.substring(0, 14)}${selectedPosition.toJson()},[37.9788421857991,23.728971736732007],[47.916638882615025,106.9225416482629],[40.24626993238064,-111.64780855178833]${prevLocations.substring(14)}");
+          "${prevLocations.substring(0, 14)}${selectedPosition.toJson()},${prevLocations.substring(14)}");
       value.publishMessage(
           'aq_display/location_list', MqttQos.atLeastOnce, builder.payload,
           retain: true);
