@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:dio/dio.dart';
+import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:pm_world_clock_client/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:mqtt_client/mqtt_browser_client.dart';
@@ -28,7 +29,7 @@ class MapsPage extends StatefulWidget {
 
 class _MapsPageState extends State<MapsPage> {
   Completer<GoogleMapController> _controller = Completer();
-  MqttBrowserClient client;
+  MqttServerClient client;
   MqttConnectionState connectionState;
   Future mqttFuture;
   String locationListStr = "";
@@ -48,14 +49,14 @@ class _MapsPageState extends State<MapsPage> {
   onMsg(String username, String password) {}
 
   _getMqtt() async {
-    MqttBrowserClient client = await connect();
+    MqttServerClient client = await connect();
     return client;
   }
 
-  Future<MqttBrowserClient> connect() async {
-    MqttBrowserClient client =
-        MqttBrowserClient('ws://mqtt.eclipseprojects.io/mqtt', 'itsame');
-    client.port = 80;
+  Future<MqttServerClient> connect() async {
+    MqttServerClient client =
+        MqttServerClient('tcp://postman.cloudmqtt.com', 'yello');
+    client.port = 17408;
     client.logging(on: false);
     client.onConnected = onConnected;
     client.onDisconnected = onDisconnected;
@@ -334,53 +335,6 @@ class _MapsPageState extends State<MapsPage> {
     zoom: 18,
   );
 
-  // _ExamplePageState() {
-  //   _filter.addListener(() {
-  //     if (_filter.text.isEmpty) {
-  //       setState(() {
-  //         _searchText = "";
-  //         filteredNames = names;
-  //       });
-  //     } else {
-  //       setState(() {
-  //         _searchText = _filter.text;
-  //       });
-  //     }
-  //   });
-  // }
-
-  // void _getNames() async {
-  //   final response = await dio.get(
-  //       'https://api.waqi.info/search/?token=510c278e7faabc1d3b7624d63860cad35acab3f1&keyword=*');
-  //   List tempList = new List();
-  //   for (int i = 0; i < response.data['results'].length; i++) {
-  //     tempList.add(response.data['results'][i]);
-  //   }
-  //   setState(() {
-  //     names = tempList;
-  //     names.shuffle();
-  //     filteredNames = names;
-  //   });
-  // }
-
-  // void _searchPressed() {
-  //   setState(() {
-  //     if (this._searchIcon.icon == Icons.search) {
-  //       this._searchIcon = new Icon(Icons.close);
-  //       this._appBarTitle = new TextField(
-  //         controller: _filter,
-  //         decoration: new InputDecoration(
-  //             prefixIcon: new Icon(Icons.search), hintText: 'Search...'),
-  //       );
-  //     } else {
-  //       this._searchIcon = new Icon(Icons.search);
-  //       this._appBarTitle = new Text('Search Example');
-  //       filteredNames = names;
-  //       _filter.clear();
-  //     }
-  //   });
-  // }
-
   @override
   void initState() {
     super.initState();
@@ -421,7 +375,7 @@ class _MapsPageState extends State<MapsPage> {
                           ))
                     ]),
                     Text(
-                      "Connecting to NET Lab",
+                      "Connecting to the NET Lab",
                       style: TextStyle(color: Colors.white70, fontSize: 24),
                     ),
                   ],
@@ -458,32 +412,6 @@ class _MapsPageState extends State<MapsPage> {
                                       "Tap on the map to choose a location",
                                       style: TextStyle(fontSize: 20),
                                     )))))
-                    // Positioned(
-                    //   top: 20,
-                    //   right: 20,
-                    //   left: 20,
-                    //   child: Container(
-                    //     decoration: BoxDecoration(
-                    //       borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                    //       // color: Colors.black,
-                    //       color: Colors.white,
-                    //     ),
-                    //     child: TextField(
-                    //       cursorColor: Colors.black,
-                    //       keyboardType: TextInputType.text,
-                    //       textInputAction: TextInputAction.go,
-                    //       decoration: InputDecoration(
-                    //           prefixIcon: Icon(Icons.search),
-                    //           border: OutlineInputBorder(
-                    //             borderRadius: const BorderRadius.all(
-                    //               const Radius.circular(10.0),
-                    //             ),
-                    //           ),
-                    //           contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                    //           hintText: "Find AQI station..."),
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 );
             }
@@ -513,11 +441,6 @@ class _MapsPageState extends State<MapsPage> {
     });
     print(selectedPosition);
   }
-
-  // Future<void> _goToTheLake() async {
-  //   final GoogleMapController controller = await _controller.future;
-  //   controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
-  // }
 
   _submitLocation() async {
     print("Locations: $locationListStr");
