@@ -356,6 +356,12 @@ class _MapsPageState extends State<MapsPage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _submitLocation,
+        label: Text('Add to Screen'),
+        icon: Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       backgroundColor: Colors.black87,
       body: FutureBuilder(
           future: mqttFuture,
@@ -444,13 +450,7 @@ class _MapsPageState extends State<MapsPage> {
                 );
             }
           }),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _submitLocation,
-        label: Text('Add to Screen'),
-        icon: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation
-          .centerFloat, // This trailing comma makes auto-formatting nicer for build methods.
+      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
@@ -474,11 +474,6 @@ class _MapsPageState extends State<MapsPage> {
     print("Locations: $locationListStr");
     String prevLocations = locationListStr;
 
-    final response = await http.get(Uri.https(
-        'api.waqi.info',
-        'feed/geo:${selectedPosition.latitude};${selectedPosition.longitude}/',
-        {"token": waqiAPIKey}));
-
     final builder = MqttClientPayloadBuilder();
     final builderEmpty = MqttClientPayloadBuilder();
 
@@ -493,21 +488,6 @@ class _MapsPageState extends State<MapsPage> {
           'aq_display/location_list', MqttQos.atLeastOnce, builder.payload,
           retain: true);
     });
-
-    if (jsonDecode(response.body)["status"] == "error") {
-      // cityList.add(CityPM(aqi: 999, cityName: "ERR - ${locations[i]}"));
-      print("Err");
-    } else if (response.statusCode == 200) {
-      // If the server did return a 200 OK response,
-      // then parse the JSON.
-      // cityList.add(CityPM.fromJson(jsonDecode(response.body)));
-      // print(response.body);
-      // print("Gottem");
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to load album');
-    }
 
     final snackBar = SnackBar(
       content: Text('Location added to display.'),
