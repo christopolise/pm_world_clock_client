@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pm_world_clock_client/info.dart';
 import 'package:pm_world_clock_client/maps.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(MyApp());
@@ -60,6 +61,20 @@ class _MyHomePageState extends State<MyHomePage> {
     return DefaultTabController(
         length: 2,
         child: Scaffold(
+            floatingActionButton: FloatingActionButton.extended(
+              backgroundColor: Color.fromRGBO(70, 70, 70, 1),
+              icon: Icon(Icons.bug_report),
+              label: Text("Report an Issue"),
+              onPressed: () async {
+                final url =
+                    "https://github.com/christopolise/pm_world_clock_client/issues/new";
+                if (await canLaunch(url)) {
+                  await launch(url, forceSafariVC: false);
+                }
+              },
+            ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.miniEndTop,
             backgroundColor: Colors.black87,
             appBar: AppBar(
               toolbarHeight: 110,
