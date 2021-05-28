@@ -1,12 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+// import 'dart:convert';
+// import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:dio/dio.dart';
-import 'package:mqtt_client/mqtt_server_client.dart';
+// import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:pm_world_clock_client/main.dart';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 import 'package:mqtt_client/mqtt_browser_client.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 
@@ -47,8 +47,6 @@ class _MapsPageState extends State<MapsPage> {
     print("We are subscribed to $sub");
   }
 
-  onMsg(String username, String password) {}
-
   _getMqtt() async {
     MqttBrowserClient client = await connect();
     return client;
@@ -56,10 +54,10 @@ class _MapsPageState extends State<MapsPage> {
 
   Future<MqttBrowserClient> connect() async {
     MqttBrowserClient client =
-        MqttBrowserClient('ws://mqtt.eclipseprojects.io/mqtt', 'aq_client');
+        MqttBrowserClient('wss://mqtt.eclipseprojects.io/mqtt', 'aq_client');
     client.setProtocolV31();
     client.logging(on: true);
-    client.port = 80;
+    client.port = 443;
     client.onConnected = onConnected;
     client.onDisconnected = onDisconnected;
     // client.onUnsubscribed = onUnsubscribed;
@@ -345,6 +343,12 @@ class _MapsPageState extends State<MapsPage> {
     mqttFuture = _getMqtt();
     mqttFuture.then((value) async =>
         await value.subscribe('aq_display/location_list', MqttQos.atLeastOnce));
+  }
+
+  @override
+  void dispose() {
+    // Disconnect from MQTT
+    super.dispose();
   }
 
   @override
