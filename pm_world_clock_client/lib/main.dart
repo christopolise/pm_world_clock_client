@@ -97,15 +97,15 @@ class _MyHomePageState extends State<MyHomePage> {
             bottomNavigationBar: TabBar(
               indicatorColor: Colors.amber,
               tabs: [
-                Tab(icon: Icon(Icons.info)),
                 Tab(icon: Icon(Icons.map)),
+                Tab(icon: Icon(Icons.info)),
               ],
             ),
             body: TabBarView(
               physics: NeverScrollableScrollPhysics(),
               children: [
-                InfoPage(),
                 MapsPage(),
+                InfoPage(),
               ],
             ) // This trailing comma makes auto-formatting nicer for build methods.
             ));

@@ -502,13 +502,14 @@ class _MapsPageState extends State<MapsPage> {
         },
       ),
     );
-    Navigator.pop(context);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => MyHomePage(
-                  title: "NET Lab - WAQI",
-                )));
+    DefaultTabController.of(context).animateTo(1);
+    // Navigator.pop(context);
+    // Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //         builder: (context) => MyHomePage(
+    //               title: "NET Lab - WAQI",
+    //             )));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
