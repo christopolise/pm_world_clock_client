@@ -35,6 +35,19 @@ class _InfoPageState extends State<InfoPage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Color.fromRGBO(70, 70, 70, 1),
+          child: Icon(Icons.bug_report),
+          // label: Text("Report an Issue"),
+          onPressed: () async {
+            final url =
+                "https://github.com/christopolise/pm_world_clock_client/issues/new";
+            if (await canLaunch(url)) {
+              await launch(url, forceSafariVC: false);
+            }
+          },
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         backgroundColor: Color.fromRGBO(248, 248, 255, 1),
         body: Padding(
             padding: EdgeInsets.all(25),
@@ -63,7 +76,7 @@ class _InfoPageState extends State<InfoPage> {
                   '''EPA establishes an AQI for five major air pollutants regulated by the Clean Air Act. Each of these pollutants has a national air quality standard set by EPA to protect public health:
 
 •    ground-level ozone
-•    particle pollution (also known as particulate matter, including PM2.5 and PM10)
+•    particle pollution
 •    carbon monoxide
 •    sulfur dioxide
 •    nitrogen dioxide
@@ -76,249 +89,253 @@ class _InfoPageState extends State<InfoPage> {
                       "AQI Basics for Ozone and Particle Pollution",
                       style: header,
                     )),
-                Table(
-                  border: TableBorder.all(),
-                  columnWidths: const <int, TableColumnWidth>{
-                    0: IntrinsicColumnWidth(),
-                    1: IntrinsicColumnWidth(),
-                    2: IntrinsicColumnWidth(),
-                    3: IntrinsicColumnWidth()
-                  },
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  children: <TableRow>[
-                    TableRow(
-                      decoration: const BoxDecoration(
-                        color: Color.fromRGBO(235, 245, 255, 1),
-                      ),
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text("Daily AQI Color", style: tableInfo),
+                SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Table(
+                      border: TableBorder.all(),
+                      columnWidths: const <int, TableColumnWidth>{
+                        0: IntrinsicColumnWidth(),
+                        1: IntrinsicColumnWidth(),
+                        2: IntrinsicColumnWidth(),
+                        3: IntrinsicColumnWidth()
+                      },
+                      defaultVerticalAlignment:
+                          TableCellVerticalAlignment.middle,
+                      children: <TableRow>[
+                        TableRow(
+                          decoration: const BoxDecoration(
+                            color: Color.fromRGBO(235, 245, 255, 1),
+                          ),
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text("Daily AQI Color", style: tableInfo),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child:
+                                  Text("Levels of Concern", style: tableInfo),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text("Values of Index", style: tableInfo),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text("Description", style: tableInfo),
+                            ),
+                          ],
                         ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text("Levels of Concern", style: tableInfo),
+                        TableRow(
+                          decoration: const BoxDecoration(
+                            color: Colors.green,
+                          ),
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Green",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Good",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "0 - 50",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Air quality is safe. Little to no risk in air pollution.",
+                                style: tableInfo,
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text("Values of Index", style: tableInfo),
+                        TableRow(
+                          decoration: const BoxDecoration(
+                            color: Colors.amber,
+                          ),
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Yellow",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Moderate",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "51 - 100",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Air quality is acceptable. However, there is some risk for those who are unusually sensitive to air pollution.",
+                                style: tableInfo,
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text("Description", style: tableInfo),
+                        TableRow(
+                          decoration: const BoxDecoration(color: Colors.orange),
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Orange",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "High",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "101 - 150",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "General public is unlikely to be affected, however sensitive groups may experience health effects.",
+                                style: tableInfo,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                          ),
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Red",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Unhealthy",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "151 - 200",
+                                style: tableInfo,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Some in the general public may experience health effects; sensitive groups may experience serious health effects.",
+                                style: tableInfo,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: const BoxDecoration(
+                            color: Colors.purple,
+                          ),
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Purple",
+                                style: tableDark,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Very Unhealthy",
+                                style: tableDark,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "201 - 300",
+                                style: tableDark,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Health alert: The risk of health effects is increased for everyone.",
+                                style: tableDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: const BoxDecoration(
+                            color: Color.fromRGBO(128, 0, 0, 1),
+                          ),
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Maroon",
+                                style: tableDark,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Hazardous",
+                                style: tableDark,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "301+",
+                                style: tableDark,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                "Health warning of emergency conditions: everyone is more likely to be affected.",
+                                style: tableDark,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                    TableRow(
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                      ),
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Green",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Good",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "0 - 50",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Air quality is safe. Little to no risk in air pollution.",
-                            style: tableInfo,
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      decoration: const BoxDecoration(
-                        color: Colors.amber,
-                      ),
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Yellow",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Moderate",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "51 - 100",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Air quality is acceptable. However, there is some risk for those who are unusually sensitive to air pollution.",
-                            style: tableInfo,
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      decoration: const BoxDecoration(color: Colors.orange),
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Orange",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "High",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "101 - 150",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "General public is unlikely to be affected, however sensitive groups may experience health effects.",
-                            style: tableInfo,
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                      ),
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Red",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Unhealthy",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "151 - 200",
-                            style: tableInfo,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Some in the general public may experience health effects; sensitive groups may experience serious health effects.",
-                            style: tableInfo,
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      decoration: const BoxDecoration(
-                        color: Colors.purple,
-                      ),
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Purple",
-                            style: tableDark,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Very Unhealthy",
-                            style: tableDark,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "201 - 300",
-                            style: tableDark,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Health alert: The risk of health effects is increased for everyone.",
-                            style: tableDark,
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      decoration: const BoxDecoration(
-                        color: Color.fromRGBO(128, 0, 0, 1),
-                      ),
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Maroon",
-                            style: tableDark,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Hazardous",
-                            style: tableDark,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "301+",
-                            style: tableDark,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Health warning of emergency conditions: everyone is more likely to be affected.",
-                            style: tableDark,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                    )),
                 Padding(
                     padding: EdgeInsets.symmetric(vertical: 15),
                     child: Text(
