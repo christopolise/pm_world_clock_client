@@ -449,6 +449,7 @@ class _MapsPageState extends State<MapsPage> {
                                     child: Text(
                                       "Tap on the map to choose a location",
                                       style: TextStyle(fontSize: 20),
+                                      textAlign: TextAlign.center,
                                     )))))
                   ],
                 );
