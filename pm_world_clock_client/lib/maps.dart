@@ -444,7 +444,6 @@ class _MapsPageState extends State<MapsPage> {
                                   // color: Colors.black,
                                   color: Color.fromRGBO(255, 255, 255, .85),
                                 ),
-                                // color: Color.fromRGBO(255, 255, 255, .85),
                                 child: Padding(
                                     padding: EdgeInsets.all(20),
                                     child: Text(
@@ -505,13 +504,6 @@ class _MapsPageState extends State<MapsPage> {
       ),
     );
     DefaultTabController.of(context).animateTo(1);
-    // Navigator.pop(context);
-    // Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //         builder: (context) => MyHomePage(
-    //               title: "NET Lab - WAQI",
-    //             )));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

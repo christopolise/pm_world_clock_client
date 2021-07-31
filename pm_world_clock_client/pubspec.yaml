@@ -29,6 +29,7 @@ dependencies:
   dio:
   http:
   mqtt_client: ^9.2.0
+  sqflite:
 
 
   # The following adds the Cupertino Icons font to your application.
