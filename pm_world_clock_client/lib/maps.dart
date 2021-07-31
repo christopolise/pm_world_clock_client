@@ -390,6 +390,7 @@ class _MapsPageState extends State<MapsPage> {
                     Text(
                       "Connecting to the NET Lab",
                       style: TextStyle(color: Colors.white70, fontSize: 24),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 );
